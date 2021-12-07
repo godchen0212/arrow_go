@@ -74,6 +74,9 @@ class PayloadInputStream : public arrow::io::RandomAccessFile {
   arrow::Result<int64_t> Read(int64_t nbytes, void *out) override;
   arrow::Result<std::shared_ptr<arrow::Buffer>> Read(int64_t nbytes) override;
   arrow::Result<int64_t> GetSize() override;
+  const uint8_t* GetData() ;
+  int GetSize2();
+
 
  private:
   const uint8_t *data_;

@@ -51,7 +51,7 @@ build-go: my_example
 
 build-cpp:
 	@echo "Building my_example cpp library ..."
-	@(env bash $(PWD)/scripts/cwrapper_build.sh -t Release -f "$(CUSTOM_THIRDPARTY_PATH)")
+	@(env bash $(PWD)/scripts/cwrapper_build.sh -t Debug -f "$(CUSTOM_THIRDPARTY_PATH)")
 
 
 # Build each component and install binary to $GOPATH/bin.

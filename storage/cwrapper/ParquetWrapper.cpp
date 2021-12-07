@@ -347,6 +347,8 @@ CStatus ReleasePayloadWriter(CPayloadWriter handler) {
   st.error_msg = nullptr;
   auto p = reinterpret_cast<wrapper::PayloadWriter *>(handler);
   if (p != nullptr) delete p;
+  auto mem_pool = arrow::default_memory_pool();
+  mem_pool->ReleaseUnused();
   return st;
 }
 
@@ -364,11 +366,13 @@ CPayloadReader NewPayloadReader(int columnType, uint8_t *buffer, int64_t buf_siz
     delete p;
     return nullptr;
   }
+  mem_pool->ReleaseUnused();
   st = p->reader->ReadTable(&p->table);
   if (!st.ok()) {
     delete p;
     return nullptr;
   }
+//  mem_pool->ReleaseUnused();
   p->column = p->table->column(0);
   assert(p->column != nullptr);
   assert(p->column->chunks().size() == 1);
@@ -433,6 +437,8 @@ CStatus GetValuesFromPayload(CPayloadReader payloadReader, DT **values, int *len
   }
   *length = array->length();
   *values = (DT *) array->raw_values();
+//  *length = p->input->GetSize2();
+//  *values = (DT *) (p->input->GetData());
   return st;
 }
 
@@ -538,14 +544,9 @@ CStatus ReleasePayloadReader(CPayloadReader payloadReader) {
   st.error_code = static_cast<int>(ErrorCode::SUCCESS);
   st.error_msg = nullptr;
   auto p = reinterpret_cast<wrapper::PayloadReader *>(payloadReader);
-//    std::shared_ptr<PayloadInputStream> input;
-//    std::unique_ptr<parquet::arrow::FileReader> reader;
-//    std::shared_ptr<arrow::Table> table;
-//    std::shared_ptr<arrow::ChunkedArray> column;
-//    std::shared_ptr<arrow::Array> array;
-//    bool *bValues;
-
   delete[] p->bValues;
   delete p;
+  auto mem_pool = arrow::default_memory_pool();
+  mem_pool->ReleaseUnused();
   return st;
 }

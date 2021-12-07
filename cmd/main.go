@@ -38,7 +38,7 @@ func execute(i int, enableGC bool) {
 
 func main() {
 	if len(os.Args) < 1 {
-		_, _ = fmt.Fprint(os.Stderr, "usage: my_example [command] [server type] [flags]\n")
+		_, _ = fmt.Fprint(os.Stderr, "usage: my_example --enableGC\n")
 		return
 	}
 
@@ -49,7 +49,7 @@ func main() {
 	if err := flags.Parse(os.Args[1:]); err != nil {
 		os.Exit(-1)
 	}
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 100; i++ {
 		execute(i, enableGC)
 	}
 	time.Sleep(10 * time.Second)

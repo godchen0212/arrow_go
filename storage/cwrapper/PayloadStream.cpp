@@ -98,5 +98,13 @@ arrow::Result<int64_t> PayloadInputStream::GetSize() {
   return arrow::Result<int64_t>(size_);
 }
 
+int PayloadInputStream::GetSize2() {
+  return size_;
+}
+
+const uint8_t * PayloadInputStream::GetData() {
+  return data_;
+}
+
 }
 
