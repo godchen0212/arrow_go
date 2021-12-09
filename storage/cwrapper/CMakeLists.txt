@@ -24,6 +24,7 @@ macro( build_arrow )
         "-DARROW_BOOST_USE_SHARED=OFF" "-DARROW_BUILD_TESTS=OFF" "-DARROW_TEST_MEMCHECK=OFF" "-DARROW_BUILD_BENCHMARKS=OFF"
         "-DARROW_CUDA=OFF"
         "-DARROW_JEMALLOC=OFF"
+        "-DARROW_MIMALLOC=ON"
         "-DARROW_PYTHON=OFF"
 	"-DARROW_WITH_RE2=OFF"
         "-DARROW_BUILD_UTILITIES=OFF"
@@ -110,7 +111,7 @@ target_sources(wrapper PUBLIC ParquetWrapper.cpp PayloadStream.cpp
 
     )
 set_target_properties( wrapper PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR} )
-target_link_libraries(wrapper PUBLIC parquet pthread)
+target_link_libraries(wrapper PUBLIC parquet pthread mimalloc-static)
 
 if(NOT CMAKE_INSTALL_PREFIX)
     set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR})

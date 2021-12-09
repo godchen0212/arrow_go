@@ -42,6 +42,8 @@ func main() {
 		return
 	}
 
+	os.Setenv("ARROW_DEFAULT_MEMORY_POOL", "mimalloc")
+
 	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	var enableGC bool

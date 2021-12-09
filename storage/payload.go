@@ -14,7 +14,7 @@ package storage
 /*
 #cgo CFLAGS: -I${SRCDIR}/cwrapper
 
-#cgo LDFLAGS: -L${SRCDIR}/cwrapper/output -lwrapper -lparquet -larrow -lthrift -lutf8proc -lstdc++ -lm
+#cgo LDFLAGS: -L${SRCDIR}/cwrapper/output -lwrapper -lparquet -larrow -lthrift -lutf8proc -lstdc++ -lm -lmimalloc
 #include <stdlib.h>
 #include "ParquetWrapper.h"
 */
@@ -476,7 +476,10 @@ func (r *PayloadReader) GetInt64FromPayload() ([]int64, error) {
 
 	var cMsg *C.int64_t
 	var cSize C.int
-
+	//length := C.GetPayloadLengthFromReader(r.payloadReaderPtr)
+	//fmt.Println("DDDD:", length)
+	//slice2 := make([]int64, length)
+	//var cMsg *C.int64_t =(*C.int64_t) (unsafe.Pointer(&slice2[0]))
 	status := C.GetInt64FromPayload(r.payloadReaderPtr, &cMsg, &cSize)
 	if err := HandleCStatus(&status, "GetInt64FromPayload failed"); err != nil {
 		return nil, err

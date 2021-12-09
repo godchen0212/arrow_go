@@ -308,8 +308,12 @@ CStatus FinishPayloadWriter(CPayloadWriter payloadWriter) {
     }
     auto table = arrow::Table::Make(p->schema, {array});
     p->output = std::make_shared<wrapper::PayloadOutputStream>();
+//        arrow::MemoryPool * mem_pool;
+//          arrow::mimalloc_memory_pool(&mem_pool);
     auto mem_pool = arrow::default_memory_pool();
-    std::cout<<"FinshPayLoadWriter::mem_pool" << mem_pool<< std::endl;
+//    auto mem_pool = arrow::mimalloc_memory_pool(&nullptr);
+
+//    std::cout<<"FinshPayLoadWriter::mem_pool" << mem_pool<< std::endl;
     ast = parquet::arrow::WriteTable(*table, mem_pool, p->output, 1024 * 1024 * 1024);
     if (!ast.ok()) {
       st.error_code = static_cast<int>(ErrorCode::UNEXPECTED_ERROR);
@@ -347,8 +351,8 @@ CStatus ReleasePayloadWriter(CPayloadWriter handler) {
   st.error_msg = nullptr;
   auto p = reinterpret_cast<wrapper::PayloadWriter *>(handler);
   if (p != nullptr) delete p;
-  auto mem_pool = arrow::default_memory_pool();
-  mem_pool->ReleaseUnused();
+//  auto mem_pool = arrow::default_memory_pool();
+//  mem_pool->ReleaseUnused();
   return st;
 }
 
@@ -358,6 +362,9 @@ CPayloadReader NewPayloadReader(int columnType, uint8_t *buffer, int64_t buf_siz
   p->bValues = nullptr;
   p->input = std::make_shared<wrapper::PayloadInputStream>(buffer, buf_size);
   auto mem_pool = arrow::default_memory_pool();
+//    arrow::MemoryPool * mem_pool;
+//      arrow::mimalloc_memory_pool(&mem_pool);
+
   std::cout<<"NewPayloadReader::mem_pool" << mem_pool<< std::endl;
   std::cout<<"NewPayloadReader::mem_pool bytes" << mem_pool->bytes_allocated()<< std::endl;
 
@@ -366,7 +373,7 @@ CPayloadReader NewPayloadReader(int columnType, uint8_t *buffer, int64_t buf_siz
     delete p;
     return nullptr;
   }
-  mem_pool->ReleaseUnused();
+//  mem_pool->ReleaseUnused();
   st = p->reader->ReadTable(&p->table);
   if (!st.ok()) {
     delete p;
@@ -423,6 +430,39 @@ CStatus GetBoolFromPayload(CPayloadReader payloadReader, bool **values, int *len
   return st;
 }
 
+template<typename AT>
+CStatus GetValuesSizeFromPayload(CPayloadReader payloadReader, int *length) {
+  CStatus st;
+  st.error_code = static_cast<int>(ErrorCode::SUCCESS);
+  st.error_msg = nullptr;
+  auto p = reinterpret_cast<wrapper::PayloadReader *>(payloadReader);
+  auto array = std::dynamic_pointer_cast<AT>(p->array);
+  if (array == nullptr) {
+    st.error_code = static_cast<int>(ErrorCode::UNEXPECTED_ERROR);
+    st.error_msg = ErrorMsg("incorrect data type");
+    return st;
+  }
+  *length = array->length();
+  return st;
+}
+
+template<typename DT, typename AT>
+CStatus GetValuesFromPayload2(CPayloadReader payloadReader, DT *values, int *length) {
+  CStatus st;
+  st.error_code = static_cast<int>(ErrorCode::SUCCESS);
+  st.error_msg = nullptr;
+  auto p = reinterpret_cast<wrapper::PayloadReader *>(payloadReader);
+  auto array = std::dynamic_pointer_cast<AT>(p->array);
+  if (array == nullptr) {
+    st.error_code = static_cast<int>(ErrorCode::UNEXPECTED_ERROR);
+    st.error_msg = ErrorMsg("incorrect data type");
+    return st;
+  }
+  *length = array->length();
+  std::memcpy(values, array->raw_values(), *length * 8);
+  return st;
+}
+
 template<typename DT, typename AT>
 CStatus GetValuesFromPayload(CPayloadReader payloadReader, DT **values, int *length) {
   CStatus st;
@@ -436,6 +476,7 @@ CStatus GetValuesFromPayload(CPayloadReader payloadReader, DT **values, int *len
     return st;
   }
   *length = array->length();
+//  std::memcpy(*values, array->raw_values(), *length * 8);
   *values = (DT *) array->raw_values();
 //  *length = p->input->GetSize2();
 //  *values = (DT *) (p->input->GetData());
@@ -456,6 +497,8 @@ extern "C"
 CStatus GetInt32FromPayload(CPayloadReader payloadReader, int32_t **values, int *length) {
   return GetValuesFromPayload<int32_t, arrow::Int32Array>(payloadReader, values, length);
 }
+
+
 
 extern "C"
 CStatus GetInt64FromPayload(CPayloadReader payloadReader, int64_t **values, int *length) {
@@ -547,6 +590,6 @@ CStatus ReleasePayloadReader(CPayloadReader payloadReader) {
   delete[] p->bValues;
   delete p;
   auto mem_pool = arrow::default_memory_pool();
-  mem_pool->ReleaseUnused();
+  std::cout<<" EEE:" << mem_pool->backend_name() <<std::endl;
   return st;
 }

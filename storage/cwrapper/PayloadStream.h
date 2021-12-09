@@ -30,6 +30,7 @@ struct PayloadWriter {
   std::shared_ptr<arrow::ArrayBuilder> builder;
   std::shared_ptr<arrow::Schema> schema;
   std::shared_ptr<PayloadOutputStream> output;
+  std::shared_ptr<arrow::MemoryPool> pool_;
   int rows;
 };
 
