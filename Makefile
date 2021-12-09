@@ -65,6 +65,6 @@ clean:
 	@echo "Cleaning up all the generated files"
 	@find . -name '*.test' | xargs rm -fv
 	@find . -name '*~' | xargs rm -fv
-	@rm -rf bin/
+	#@rm -rf bin/
 	@rm -rf lib/
-	@rm -rf $(GOPATH)/bin/*
+	#@rm -rf $(GOPATH)/bin/*

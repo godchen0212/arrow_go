@@ -548,5 +548,6 @@ CStatus ReleasePayloadReader(CPayloadReader payloadReader) {
   delete p;
   auto mem_pool = arrow::default_memory_pool();
   mem_pool->ReleaseUnused();
+  std::cout<< "MemPool Backend Name:" << mem_pool->backend_name() <<std::endl;
   return st;
 }
