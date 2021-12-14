@@ -33,7 +33,7 @@ void write_parquet_file(const arrow::Table &table) {
             outfile, arrow::io::FileOutputStream::Open("parquet-arrow-example2.parquet"));
     PARQUET_THROW_NOT_OK(
             //parquet::arrow::WriteTable(table, arrow::default_memory_pool(), outfile, 3));
-            parquet::arrow::WriteTable(table, mempool, outfile, 3));
+            parquet::arrow::WriteTable(table, mempool, outfile, 64*1024*1024));
 
     std::cout << "write::bytes-2::" << mempool->bytes_allocated() << std::endl;
 

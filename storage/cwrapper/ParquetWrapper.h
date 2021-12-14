@@ -50,6 +50,7 @@ CStatus ReleasePayloadWriter(CPayloadWriter handler);
 //============= payload reader ======================
 typedef void *CPayloadReader;
 CPayloadReader NewPayloadReader(int columnType, uint8_t *buffer, int64_t buf_size);
+CPayloadReader NewPayloadReaderSecond();
 CStatus GetBoolFromPayload(CPayloadReader payloadReader, bool **values, int *length);
 CStatus GetInt8FromPayload(CPayloadReader payloadReader, int8_t **values, int *length);
 CStatus GetInt16FromPayload(CPayloadReader payloadReader, int16_t **values, int *length);

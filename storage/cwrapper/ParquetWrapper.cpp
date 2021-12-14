@@ -13,6 +13,8 @@
 #include "PayloadStream.h"
 #include <iostream>
 
+#include <fstream>
+
 static const char *ErrorMsg(const std::string &msg) {
   if (msg.empty()) return nullptr;
   auto ret = (char *) malloc(msg.size() + 1);
@@ -353,26 +355,30 @@ CStatus ReleasePayloadWriter(CPayloadWriter handler) {
 }
 
 extern "C"
-CPayloadReader NewPayloadReader(int columnType, uint8_t *buffer, int64_t buf_size) {
-  auto p = new wrapper::PayloadReader;
-  p->bValues = nullptr;
-  p->input = std::make_shared<wrapper::PayloadInputStream>(buffer, buf_size);
+CPayloadReader NewPayloadReader(int columnType, uint8_t *buffer, int64_t size) {
+
+  std::shared_ptr<wrapper::PayloadInputStream> input;
+  input = std::make_shared<wrapper::PayloadInputStream>(buffer, size);
   auto mem_pool = arrow::default_memory_pool();
   std::cout<<"NewPayloadReader::mem_pool" << mem_pool<< std::endl;
   std::cout<<"NewPayloadReader::mem_pool bytes" << mem_pool->bytes_allocated()<< std::endl;
 
-  auto st = parquet::arrow::OpenFile(p->input, mem_pool, &p->reader);
+  std::unique_ptr<parquet::arrow::FileReader> reader;
+  auto st = parquet::arrow::OpenFile(input, mem_pool, &reader);
   if (!st.ok()) {
-    delete p;
     return nullptr;
   }
-  mem_pool->ReleaseUnused();
-  st = p->reader->ReadTable(&p->table);
+  std::cout<<"NewPayloadReader::mem_pool" << mem_pool<< std::endl;
+  std::cout<<"NewPayloadReader::mem_pool bytes" << mem_pool->bytes_allocated()<< std::endl;
+  std::shared_ptr<arrow::Table> table;
+  st = reader->ReadTable(&table);
   if (!st.ok()) {
-    delete p;
     return nullptr;
   }
+  std::cout<<"NewPayloadReader::mem_pool" << mem_pool<< std::endl;
+  std::cout<<"NewPayloadReader::mem_pool bytes" << mem_pool->bytes_allocated()<< std::endl;
 //  mem_pool->ReleaseUnused();
+  /*
   p->column = p->table->column(0);
   assert(p->column != nullptr);
   assert(p->column->chunks().size() == 1);
@@ -396,8 +402,70 @@ CPayloadReader NewPayloadReader(int columnType, uint8_t *buffer, int64_t buf_siz
       return nullptr;
     }
   }
-  return reinterpret_cast<CPayloadReader>(p);
+  */
+  //free(buffer);
+  return nullptr;
 }
+
+extern "C"
+CPayloadReader NewPayloadReaderSecond() {
+	uint8_t* buffer = nullptr;
+	int size;
+    // read entire file into string
+    if(std::ifstream is{"parquet-arrow-example.parquet", std::ios::binary | std::ios::ate}) {
+  		std::cout<<"Open file" << std::endl;
+        size = is.tellg();
+	    buffer = (uint8_t*)malloc(size);
+        is.seekg(0);
+        is.read((char*)buffer, size);
+    }
+  std::cout<<"Read file end" << std::endl;
+
+
+  std::shared_ptr<wrapper::PayloadInputStream> input;
+  input = std::make_shared<wrapper::PayloadInputStream>(buffer, size);
+  auto mem_pool = arrow::default_memory_pool();
+  std::cout<<"NewPayloadReader::mem_pool" << mem_pool<< std::endl;
+  std::cout<<"NewPayloadReader::mem_pool bytes" << mem_pool->bytes_allocated()<< std::endl;
+
+  std::unique_ptr<parquet::arrow::FileReader> reader;
+  parquet::arrow::OpenFile(input, mem_pool, &reader);
+  std::cout<<"NewPayloadReader::mem_pool" << mem_pool<< std::endl;
+  std::cout<<"NewPayloadReader::mem_pool bytes" << mem_pool->bytes_allocated()<< std::endl;
+  std::shared_ptr<arrow::Table> table;
+  reader->ReadTable(&table);
+  std::cout<<"NewPayloadReader::mem_pool" << mem_pool<< std::endl;
+  std::cout<<"NewPayloadReader::mem_pool bytes" << mem_pool->bytes_allocated()<< std::endl;
+//  mem_pool->ReleaseUnused();
+  /*
+  p->column = p->table->column(0);
+  assert(p->column != nullptr);
+  assert(p->column->chunks().size() == 1);
+  p->array = p->column->chunk(0);
+
+  switch (columnType) {
+    case ColumnType::BOOL :
+    case ColumnType::INT8 :
+    case ColumnType::INT16 :
+    case ColumnType::INT32 :
+    case ColumnType::INT64 :
+    case ColumnType::FLOAT :
+    case ColumnType::DOUBLE :
+    case ColumnType::STRING :
+    case ColumnType::VECTOR_BINARY :
+    case ColumnType::VECTOR_FLOAT : {
+      break;
+    }
+    default: {
+      delete p;
+      return nullptr;
+    }
+  }
+  */
+  free(buffer);
+  return nullptr;
+}
+
 
 extern "C"
 CStatus GetBoolFromPayload(CPayloadReader payloadReader, bool **values, int *length) {

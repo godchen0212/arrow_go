@@ -10,6 +10,7 @@
 // or implied. See the License for the specific language governing permissions and limitations under the License.
 
 #include "PayloadStream.h"
+#include <iostream>
 
 namespace wrapper {
 
@@ -56,7 +57,8 @@ PayloadInputStream::PayloadInputStream(const uint8_t *data, int64_t size) :
 }
 
 PayloadInputStream::~PayloadInputStream() noexcept {
-
+  std::cout<<"end" << std::endl;
+  std::cout<<this->buf.use_count() << std::endl;
 }
 
 arrow::Status PayloadInputStream::Close() {
@@ -83,6 +85,7 @@ arrow::Result<int64_t> PayloadInputStream::Read(int64_t nbytes, void *out) {
   if (nbytes > remain) nbytes = remain;
   std::memcpy(out, data_ + tell_, nbytes);
   tell_ += nbytes;
+  std::cout<<"first read" << std::endl;
   return arrow::Result<int64_t>(nbytes);
 }
 
@@ -90,7 +93,9 @@ arrow::Result<std::shared_ptr<arrow::Buffer>> PayloadInputStream::Read(int64_t n
   auto remain = size_ - tell_;
   if (nbytes > remain) nbytes = remain;
   auto buf = std::make_shared<arrow::Buffer>(data_ + tell_, nbytes);
+  this->buf = buf;
   tell_ += nbytes;
+  std::cout<<"second read" << std::endl;
   return arrow::Result<std::shared_ptr<arrow::Buffer>>(buf);
 }
 

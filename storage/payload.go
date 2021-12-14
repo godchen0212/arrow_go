@@ -335,13 +335,8 @@ func (w *PayloadWriter) Close() error {
 }
 
 func NewPayloadReader(colType DataType, buf []byte) (*PayloadReader, error) {
-	if len(buf) == 0 {
-		return nil, errors.New("create Payload reader failed, buffer is empty")
-	}
-	r := C.NewPayloadReader(C.int(colType), (*C.uint8_t)(unsafe.Pointer(&buf[0])), C.long(len(buf)))
-	if r == nil {
-		return nil, errors.New("failed to read parquet from buffer")
-	}
+	//r := C.NewPayloadReader(C.int(colType), (*C.uint8_t)(unsafe.Pointer(&buf[0])), C.long(len(buf)))
+	r := C.NewPayloadReaderSecond()
 	return &PayloadReader{payloadReaderPtr: r, colType: colType}, nil
 }
 

@@ -83,6 +83,7 @@ class PayloadInputStream : public arrow::io::RandomAccessFile {
   const int64_t size_;
   int64_t tell_;
   bool closed_;
+  std::shared_ptr<arrow::Buffer> buf;
 
 };
 

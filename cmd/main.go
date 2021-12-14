@@ -2,38 +2,38 @@ package main
 
 import (
 	"example.com/arrow_go/storage"
-	"flag"
 	"fmt"
-	"io/ioutil"
+	//"io/ioutil"
 	"os"
-	"runtime"
+	//"runtime"
 	"time"
 )
 
 func execute(i int, enableGC bool) {
 	fmt.Println("round ", i)
-	b, err := ioutil.ReadFile("parquet-arrow-example2.parquet") // just pass the file name
-	if err != nil {
-		fmt.Print(err)
-	}
-	fmt.Println(len(b))
+	/*
+		b, err := ioutil.ReadFile("parquet-arrow-example.parquet") // just pass the file name
+		if err != nil {
+			fmt.Print(err)
+		}
+		fmt.Println(len(b))
+	*/
 
-	r, err2 := storage.NewPayloadReader(storage.DataType_Int64, b)
+	_, err2 := storage.NewPayloadReader(storage.DataType_Int64, nil)
 	if err2 != nil {
 		panic(err2.Error())
 	}
-	fmt.Println(r)
-	for j := 0; j < 10; j++ {
-		int64s, _ := r.GetInt64FromPayload()
-		fmt.Println(len(int64s))
-	}
-	err = r.ReleasePayloadReader()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	if enableGC {
-		runtime.GC()
-	}
+	/*
+		fmt.Println(r)
+			for j := 0; j < 10; j++ {
+				int64s, _ := r.GetInt64FromPayload()
+				fmt.Println(len(int64s))
+			}
+			err = r.ReleasePayloadReader()
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+	*/
 }
 
 func main() {
@@ -42,15 +42,9 @@ func main() {
 		return
 	}
 
-	flags := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-
-	var enableGC bool
-	flags.BoolVar(&enableGC, "enableGC", false, "enable manually gc")
-	if err := flags.Parse(os.Args[1:]); err != nil {
-		os.Exit(-1)
-	}
 	for i := 0; i < 100; i++ {
-		execute(i, enableGC)
+		execute(i, false)
 	}
-	time.Sleep(10 * time.Second)
+	//runtime.GC()
+	time.Sleep(1000 * time.Second)
 }
